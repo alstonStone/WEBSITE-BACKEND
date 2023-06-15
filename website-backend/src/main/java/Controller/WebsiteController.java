@@ -13,23 +13,31 @@ public class WebsiteController {
     String lastEmail = "none";
 
     public Javalin startAPI() {
-        Javalin app = Javalin.create();
+        Javalin app = Javalin.create(config -> {
+            config.plugins.enableCors(cors -> {
+                cors.add(it -> {
+                    it.anyHost();
+                });
+            });
+        });
 
-        app.post("/contact/{email}", this::postContactHandler);
+        app.post("/contact", this::postContactHandler);
 
         app.get("/contact", this::getContactHandler);
         return app;
     }
 
-    private void getContactHandler(@NotNull Context context) {
-        context.result(context.body());
-
+    private void getContactHandler(Context context) {
+        context.result("post called"+context.body());
+        System.out.println("it worked");
         context.status(200);
     }
 
 
 
-    private void postContactHandler(Context context) throws IOException {
+    private void postContactHandler(Context context) {
+        context.result("post called"+context.body());
+        System.out.println("it worked");
 
     }
 
