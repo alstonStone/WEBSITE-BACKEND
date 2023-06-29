@@ -11,6 +11,15 @@ import org.apache.commons.mail.*;
 import io.javalin.Javalin;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.SimpleEmail;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.util.Properties;
+
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static j2html.TagCreator.br;
@@ -46,26 +55,52 @@ public class WebsiteController {
 
 
 
-    private void postContactHandler(Context context) throws JsonProcessingException, EmailException {
-        context.result("post called"+context.body());
+    private void postContactHandler(Context context) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         EmailAdress emailAdress = mapper.readValue(context.body(), EmailAdress .class);
+        // email ID of Recipient.
+        String recipient = emailAdress.getEmail();
 
-        System.out.println(emailAdress.getEmail());
+        // email ID of  Sender.
+        String sender = "alstonstone0@gmail.com";
 
+        // using host as localhost
+        String host = "127.0.0.1";
 
+        // Getting system properties
+        Properties properties = System.getProperties();
 
+        // Setting up mail server
+        properties.setProperty("mail.smtp.host", host);
 
-        Email email = new SimpleEmail();
-        email.setHostName("smtp.googlemail.com");
-        email.setSmtpPort(465);
-        email.setAuthenticator(new DefaultAuthenticator("alstonstone0@gmail.com", "tgjsjqwefpfnhzlv"));
-        email.setSSLOnConnect(true);
-        email.setFrom("alstonstone0@gmail.com");
+        // creating session object to get properties
+        Session session = Session.getDefaultInstance(properties);
 
-        email.setMsg("message");
-        email.addTo(emailAdress.getEmail());
-        email.send(); // will throw email-exception if something is wrong
+        try
+        {
+            // MimeMessage object.
+            MimeMessage message = new MimeMessage(session);
+
+            // Set From Field: adding senders email to from field.
+            message.setFrom(new InternetAddress(sender));
+
+            // Set To Field: adding recipient's email to from field.
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+
+            // Set Subject: subject of the email
+            message.setSubject("This is Subject");
+
+            // set body of the email.
+            message.setText("This is a test mail");
+
+            // Send email.
+            Transport.send(message);
+            System.out.println("Mail successfully sent");
+        }
+        catch (MessagingException mex)
+        {
+            mex.printStackTrace();
+        }
 
     }
 
